@@ -1,4 +1,5 @@
 <?php
+
 namespace FaigerSYS\MapImageEngine;
 
 use pocketmine\Server;
