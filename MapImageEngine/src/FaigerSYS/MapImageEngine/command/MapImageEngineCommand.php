@@ -1,14 +1,15 @@
 <?php
+
 namespace FaigerSYS\MapImageEngine\command;
 
 use pocketmine\utils\TextFormat as CLR;
 
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
 
 use pocketmine\command\Command;
-use pocketmine\command\PluginIdentifiableCommand;
+use pocketmine\plugin\PluginOwned;
 
 use pocketmine\plugin\Plugin;
 
@@ -18,13 +19,13 @@ use pocketmine\event\player\PlayerQuitEvent;
 
 use pocketmine\math\Vector3;
 
-use pocketmine\tile\ItemFrame;
+use pocketmine\block\tile\ItemFrame;
 
 use FaigerSYS\MapImageEngine\MapImageEngine;
 use FaigerSYS\MapImageEngine\item\FilledMap;
 use FaigerSYS\MapImageEngine\TranslateStrings as TS;
 
-class MapImageEngineCommand extends Command implements PluginIdentifiableCommand, Listener {
+class MapImageEngineCommand extends Command implements PluginOwned, Listener {
 	
 	const MSG_PREFIX = CLR::BOLD . CLR::GOLD . '[' . CLR::RESET . CLR::GREEN . 'MIE' . CLR::BOLD . CLR::GOLD . ']' . CLR::RESET . CLR::GRAY . ' ';
 	
@@ -32,10 +33,9 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 	private $cache = [];
 	
 	public function __construct() {
-		$this->getPlugin()->getServer()->getPluginManager()->registerEvents($this, $this->getPlugin());
+		$this->getOwningPlugin()->getServer()->getPluginManager()->registerEvents($this, $this->getOwningPlugin());
 		
-		parent::__construct('mapimageengine', TS::translate('command.desc'), null, ['mie']);
-		$this->setPermission('mapimageengine');
+		parent::__construct('mapimageengine', TS::translate('command.desc'), "mapimageengine", ['mie']);
 	}
 	
 	public function execute(CommandSender $sender, string $label, array $args) {
@@ -51,7 +51,7 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 		$cmd = array_shift($args);
 		switch ($cmd) {
 			case 'list':
-				$list = $this->getPlugin()->getImageStorage()->getNamedImages();
+				$list = $this->getOwningPlugin()->getImageStorage()->getNamedImages();
 				if (empty($list)) {
 					$sender->sendMessage(self::MSG_PREFIX . TS::translate('command.list.no-images'));
 				} else {
@@ -76,7 +76,7 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 					$sender->sendMessage(CLR::GRAY . '  pretty - ' . TS::translate('command.place.usage.flags.pretty'));
 					$sender->sendMessage(CLR::GRAY . '  auto - ' . TS::translate('command.place.usage.flags.auto'));
 				} else {
-					$image = $this->getPlugin()->getImageStorage()->getImageByName($image_name);
+					$image = $this->getOwningPlugin()->getImageStorage()->getImageByName($image_name);
 					if (!$image) {
 						$sender->sendMessage(self::MSG_PREFIX . TS::translate('command.place.not-found', $image_name));
 					} else {
@@ -126,9 +126,9 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 		
 		if (isset($this->cache[$name])) {
 			$block = $e->getBlock();
-			$level = $block->getLevel();
+			$level = $block->getPosition()->getWorld();
 			
-			$frame = $level->getTile($block);
+			$frame = $level->getTile($block->getPosition());
 			if (!($frame instanceof ItemFrame)) {
 				$player->sendMessage(self::MSG_PREFIX . TS::translate('command.place.not-frame'));
 			} else {
@@ -136,11 +136,11 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 				
 				if ($data['auto']) {
 					if (!isset($data['p1'])) {
-						$data['p1'] = $block;
+						$data['p1'] = $block->getPosition();
 						$this->processPlaceMessage($player);
 					} else {
 						$p1 = $data['p1'];
-						$p2 = $block;
+						$p2 = $block->getPosition();
 						
 						$x1 = $p1->getX();
 						$y1 = $p1->getY();
@@ -215,7 +215,7 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 				}
 			}
 			
-			$e->setCancelled(true);
+			$e->cancel();
 		}
 	}
 	
@@ -259,7 +259,7 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 		}
 	}
 	
-	public function getPlugin() : Plugin {
+	public function getOwningPlugin() : Plugin {
 		return MapImageEngine::getInstance();
 	}
 	
