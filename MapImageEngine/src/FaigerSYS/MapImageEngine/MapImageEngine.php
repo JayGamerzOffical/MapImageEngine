@@ -10,7 +10,7 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use FaigerSYS\MapImageEngine\item\FilledMap;
 
-use pocketmine\tile\ItemFrame;
+use pocketmine\block\tile\ItemFrame;
 
 use pocketmine\event\Listener;
 use pocketmine\event\server\DataPacketReceiveEvent;
