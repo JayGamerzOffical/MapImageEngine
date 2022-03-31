@@ -1,11 +1,15 @@
 <?php
+
 namespace FaigerSYS\MapImageEngine\storage;
 
-use pocketmine\Player;
+use pocketmine\player\Player;
+use pocketmine\Server;
 
 use pocketmine\network\mcpe\protocol\BatchPacket;
 
 use FaigerSYS\MapImageEngine\MapImageEngine;
+
+use FaigerSYS\MapImageEngine\task\CompressTask;
 
 class ImageStorage {
 	
@@ -24,7 +28,6 @@ class ImageStorage {
 	/** @var string[] */
 	private $names = [];
 	
-	/** @var BatchPacket[]*/
 	private $packet_cache = [];
 	
 	/**
@@ -117,28 +120,46 @@ class ImageStorage {
 			if ($chunk_x === null && $chunk_y === null) {
 				foreach ($image->getChunks() as $chunks) {
 					foreach ($chunks as $chunk) {
-						$pk = new BatchPacket();
-						$pk->setCompressionLevel(7);
-						if (MapImageEngine::isCustomPacketSupported()) {
-							$pk->addPacket($chunk->generateCustomMapImagePacket());
-						} else {
-							$pk->addPacket($chunk->generateMapImagePacket());
+						foreach ([$chunk->generateCustomMapImagePacket(), $chunk->generateMapImagePacket()] as $packet){
+							$pk = new CompressTask($packet, function () use ($session, $packet) {
+								$session->sendDataPacket($packet);
+							});
+							
+							Server::getInstance()->getAsyncPool()->submitTask($pk);
 						}
-						$pk->encode();
+						
+						
+						// $pk = new BatchPacket();
+						// $pk->setCompressionLevel(7);
+						// if (MapImageEngine::isCustomPacketSupported()) {
+							// $pk->addPacket($chunk->generateCustomMapImagePacket());
+						// } else {
+							// $pk->addPacket($chunk->generateMapImagePacket());
+						// }
+						// $pk->encode();
 						$this->packet_cache[$chunk->getMapId()] = $pk;
 					}
 				}
 			} else {
 				$chunk = $image->getChunk($chunk_x, $chunk_y);
 				if ($chunk !== null) {
-					$pk = new BatchPacket();
-					$pk->setCompressionLevel(7);
-					if (MapImageEngine::isCustomPacketSupported()) {
-						$pk->addPacket($chunk->generateCustomMapImagePacket());
-					} else {
-						$pk->addPacket($chunk->generateMapImagePacket());
+					// $pk = new BatchPacket();
+					// $pk->setCompressionLevel(7);
+					// if (MapImageEngine::isCustomPacketSupported()) {
+						// $pk->addPacket($chunk->generateCustomMapImagePacket());
+					// } else {
+						// $pk->addPacket($chunk->generateMapImagePacket());
+					// }
+					// $pk->encode();
+					
+					foreach ([$chunk->generateCustomMapImagePacket(), $chunk->generateMapImagePacket()] as $packet){
+						$pk = new CompressTask($packet, function () use ($session, $packet) {
+							$session->sendDataPacket($packet);
+						});
+						
+						Server::getInstance()->getAsyncPool()->submitTask($pk);
 					}
-					$pk->encode();
+					
 					$this->packet_cache[$chunk->getMapId()] = $pk;
 				}
 			}
