@@ -1,8 +1,10 @@
 <?php
+
 namespace FaigerSYS\MIE_Converter;
 
-use pocketmine\utils\UUID;
+// use pocketmine\utils\UUID;
 use pocketmine\utils\BinaryStream;
+use Ramsey\Uuid\Uuid;
 
 class MapImageUtils {
 	
@@ -28,10 +30,11 @@ class MapImageUtils {
 		$data = new BinaryStream();
 		$data->put('MIEI');
 		$data->putInt(self::CURRENT_VERSION);
-		$data->putByte((int) ($compression_level > 0));
+		if($compression_level > 0)
+			$data->putByte((int)$compression_level);
 		
 		$buffer = new BinaryStream();
-		$buffer->put(UUID::fromRandom()->toBinary());
+		$buffer->put(Uuid::uuid4()->getBytes());
 		$buffer->putInt($blocks_width);
 		$buffer->putInt($blocks_height);
 		
@@ -59,6 +62,6 @@ class MapImageUtils {
 		}
 		$data->put($buffer);
 		
-		return $data->buffer;
+		return $data->getBuffer();
 	}
 }
