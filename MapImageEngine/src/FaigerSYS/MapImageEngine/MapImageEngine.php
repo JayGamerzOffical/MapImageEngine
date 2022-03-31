@@ -7,6 +7,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat as CLR;
 
 use pocketmine\item\Item;
+use pocketmine\item\ItemIdentifier;
 use pocketmine\item\ItemFactory;
 use FaigerSYS\MapImageEngine\item\FilledMap;
 
@@ -79,7 +80,7 @@ class MapImageEngine extends PluginBase implements Listener {
 		
 		$this->getServer()->getCommandMap()->register($this->getName(), new MapImageEngineCommand());
 		
-		$item = new FilledMap();
+		$item = new FilledMap(new ItemIdentifier(ItemIds::FILLED_MAP, 0));
 		if(!ItemFactory::isRegistered($item->getId())){
 			ItemFactory::register($item, true);
 		}
