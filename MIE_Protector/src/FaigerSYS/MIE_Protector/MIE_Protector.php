@@ -1,4 +1,5 @@
 <?php
+
 namespace FaigerSYS\MIE_Protector;
 
 use pocketmine\plugin\PluginBase;
@@ -13,7 +14,7 @@ use FaigerSYS\MapImageEngine\item\FilledMap;
 
 class MIE_Protector extends PluginBase implements Listener {
 	
-	public function onEnable() {
+	public function onEnable(): void{
 		$this->getLogger()->info(CLR::GOLD . 'MIE_Protector enabling...');
 		
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -27,9 +28,9 @@ class MIE_Protector extends PluginBase implements Listener {
 	 */
 	public function onClick(PlayerInteractEvent $e) {
 		$block = $e->getBlock();
-		$frame = $block->getLevel()->getTile($block);
+		$frame = $block->getWorld()->getTile($block);
 		if ($frame instanceof ItemFrame && $frame->getItem() instanceof FilledMap && !$e->getPlayer()->hasPermission('mapimageengine.bypassprotect')) {
-			$e->setCancelled(true);
+			$e->cancel();
 		}
 	}
 	
