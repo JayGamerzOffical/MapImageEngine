@@ -1,7 +1,10 @@
 <?php
+
 namespace FaigerSYS\MapImageEngine\item;
 
 use pocketmine\item\Item;
+use pocketmine\item\ItemIds;
+use pocketmine\item\ItemIdentifier;
 
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\StringTag;
@@ -13,23 +16,25 @@ class FilledMap extends Item {
 	const CURRENT_MAP_API = 3;
 	const SUPPORTED_MAP_API = [3];
 	
-	public function __construct() {
-		parent::__construct(self::FILLED_MAP, 0, 1, 'Map');
+	public function __construct(ItemIdentifier $Identifier)
+	{
+		parent::__construct($Identifier, "Map");
+		$this->updateMapData();
 	}
 	
-	public function setCompoundTag($tag) : Item {
-		parent::setCompoundTag($tag);
-		$this->updateMapData();
+	// public function setCompoundTag($tag) : Item {
+		// parent::setCompoundTag($tag);
+		// $this->updateMapData();
 		
-		return $this;
-	}
+		// return $this;
+	// }
 	
-	public function setNamedTag(CompoundTag $tag) : Item {
-		parent::setNamedTag($tag);
-		$this->updateMapData();
+	// public function setNamedTag(CompoundTag $tag) : Item {
+		// parent::setNamedTag($tag);
+		// $this->updateMapData();
 		
-		return $this;
-	}
+		// return $this;
+	// }
 	
 	protected function updateMapData() {
 		$plugin = MapImageEngine::getInstance();
@@ -57,7 +62,7 @@ class FilledMap extends Item {
 		
 		$tag = $this->getNamedTag();
 		$tag->setLong('map_uuid', $map_id, true);
-		parent::setNamedTag($tag);
+		$this->setNamedTag($tag);
 	}
 	
 	public function setImageData(string $image_hash, int $block_x, int $block_y) {
@@ -68,14 +73,15 @@ class FilledMap extends Item {
 			'x_block'    => $block_x,
 			'y_block'    => $block_y
 		]));
-		parent::setNamedTag($tag);
+		$this->setNamedTag($tag);
 		
 		$this->updateMapData();
 	}
 	
 	public function getImageData() {
 		$tag = $this->getNamedTag();
-		if ($tag->hasTag('mie_data', StringTag::class)) {
+		// if ($tag->hasTag('mie_data', StringTag::class)) {
+		if ($tag->getTag('mie_data') !== null) {
 			return json_decode($tag->getString('mie_data'), true);
 		}
 	}
@@ -91,5 +97,4 @@ class FilledMap extends Item {
 	public function getImageChunkY() {
 		return $this->getImageData()['y_block'] ?? null;
 	}
-	
 }
