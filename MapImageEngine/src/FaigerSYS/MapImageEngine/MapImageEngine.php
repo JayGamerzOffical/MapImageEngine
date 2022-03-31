@@ -1,4 +1,5 @@
 <?php
+
 namespace FaigerSYS\MapImageEngine;
 
 use pocketmine\plugin\PluginBase;
@@ -13,7 +14,7 @@ use pocketmine\tile\ItemFrame;
 
 use pocketmine\event\Listener;
 use pocketmine\event\server\DataPacketReceiveEvent;
-use pocketmine\event\level\ChunkLoadEvent;
+use pocketmine\event\world\ChunkLoadEvent;
 
 use FaigerSYS\MapImageEngine\TranslateStrings as TS;
 
@@ -37,7 +38,7 @@ class MapImageEngine extends PluginBase implements Listener {
 	/** @var ImageStorage */
 	private $storage;
 	
-	public function onEnable() {
+	public function onEnable(): void {
 		$old_plugin = self::$instance;
 		self::$instance = $this;
 		$is_reload = $old_plugin instanceof MapImageEngine;
@@ -76,9 +77,12 @@ class MapImageEngine extends PluginBase implements Listener {
 		
 		$this->loadImages($is_reload);
 		
-		$this->getServer()->getCommandMap()->register('mapimageengine', new MapImageEngineCommand());
+		$this->getServer()->getCommandMap()->register($this->getName(), new MapImageEngineCommand());
 		
-		ItemFactory::registerItem(new FilledMap(), true);
+		$item = new FilledMap();
+		if(!ItemFactory::isRegistered($item->getId())){
+			ItemFactory::register($item, true);
+		}
 		
 		$this->getLogger()->info(CLR::GOLD . TS::translate($is_reload ? 'plugin-loader.reloaded' : 'plugin-loader.loaded'));
 	}
@@ -181,9 +185,9 @@ class MapImageEngine extends PluginBase implements Listener {
 		if ($e->getPacket() instanceof MapInfoRequestPacket) {
 			$pk = $this->getImageStorage()->getCachedPacket($e->getPacket()->mapId);
 			if ($pk !== null) {
-				$e->getPlayer()->dataPacket($pk);
+				$e->getOrigin()->getPlayer()->sendDataPacket($pk);
 			}
-			$e->setCancelled(true);
+			$e->cancel();
 		}
 	}
 	
