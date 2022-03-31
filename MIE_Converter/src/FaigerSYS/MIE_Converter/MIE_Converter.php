@@ -1,4 +1,5 @@
 <?php
+
 namespace FaigerSYS\MIE_Converter;
 
 use pocketmine\plugin\PluginBase;
@@ -12,7 +13,7 @@ class MIE_Converter extends PluginBase {
 	
 	const MSG_PREFIX = CLR::BOLD . CLR::GOLD . '[' . CLR::RESET . CLR::GREEN . 'MIE Converter' . CLR::BOLD . CLR::GOLD . ']' . CLR::RESET . CLR::GRAY . ' ';
 	
-	public function onEnable() {
+	public function onEnable(): void{
 		$this->getLogger()->info(CLR::GOLD . 'MIE_Converter enabling...');
 		
 		if (!extension_loaded('gd')) {
@@ -76,5 +77,4 @@ class MIE_Converter extends PluginBase {
 		$sender->sendMessage(self::MSG_PREFIX . 'Done! Image location: ' . CLR::WHITE . $path);
 		return true;
 	}
-	
 }
