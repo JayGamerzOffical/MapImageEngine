@@ -56,7 +56,7 @@ class MapImageUtils {
 		
 		imagedestroy($image);
 		
-		$buffer = $buffer->buffer;
+		$buffer = $buffer->getBuffer();
 		if ($compression_level > 0) {
 			$buffer = zlib_encode($buffer, ZLIB_ENCODING_DEFLATE, min($compression_level, 9));
 		}
