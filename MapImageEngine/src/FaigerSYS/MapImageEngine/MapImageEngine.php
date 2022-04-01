@@ -7,6 +7,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat as CLR;
 
 use pocketmine\item\Item;
+use pocketmine\item\ItemIds;
 use pocketmine\item\ItemIdentifier;
 use pocketmine\item\ItemFactory;
 use FaigerSYS\MapImageEngine\item\FilledMap;
