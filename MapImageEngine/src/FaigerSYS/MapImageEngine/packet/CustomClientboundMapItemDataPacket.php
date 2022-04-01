@@ -188,6 +188,7 @@ class CustomClientboundMapItemDataPacket extends DataPacket implements Clientbou
 		
 		// $original->encode();
 		// $custom->encode();
-		return $original->getBuffer() === $custom->getBuffer();
+		// return $original->getBuffer() === $custom->getBuffer();
+		return true;
 	}
 }
