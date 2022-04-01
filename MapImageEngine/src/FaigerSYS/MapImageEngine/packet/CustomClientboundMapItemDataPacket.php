@@ -1,8 +1,6 @@
 <?php
 
 namespace FaigerSYS\MapImageEngine\packet;
-
-declare(strict_types=1);
   
 use pocketmine\color\Color;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
@@ -11,8 +9,13 @@ use pocketmine\network\mcpe\protocol\types\MapDecoration;
 use pocketmine\network\mcpe\protocol\types\MapImage;
 use pocketmine\network\mcpe\protocol\types\MapTrackedObject;
 use pocketmine\utils\Binary;
+use pocketmine\network\mcpe\protocol\DataPacket;
+use pocketmine\network\mcpe\protocol\ClientboundPacket;
+use pocketmine\network\mcpe\protocol\PacketHandlerInterface;
+use pocketmine\network\mcpe\protocol\ClientboundMapItemDataPacket;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use function count;
- 
+
 class CustomClientboundMapItemDataPacket extends DataPacket implements ClientboundPacket{
     public const NETWORK_ID = ProtocolInfo::CLIENTBOUND_MAP_ITEM_DATA_PACKET;
  
@@ -160,4 +163,31 @@ class CustomClientboundMapItemDataPacket extends DataPacket implements Clientbou
     public function handle(PacketHandlerInterface $handler) : bool{
         return $handler->handleClientboundMapItemData($this);
     }
+	
+	public static function checkCompatiblity() : bool {
+		$original = new ClientboundMapItemDataPacket();
+		$custom = new CustomClientboundMapItemDataPacket();
+		
+		$original->mapId = $custom->mapId = 1;
+		$original->dimensionId = $custom->dimensionId = DimensionIds::OVERWORLD;
+		// $original->eids = $custom->eids = [];
+		$original->scale = $custom->scale = 0;
+		$original->trackedEntities = $custom->trackedEntities = [];
+		$original->decorations = $custom->decorations = [];
+		// $original->width = $custom->width = 128;
+		// $original->height = $custom->height = 128;
+		$original->xOffset = $custom->xOffset = 0;
+		$original->yOffset = $custom->yOffset = 0;
+		
+		$color = new Color(0xff, 0xee, 0xdd);
+		// $original->colors = array_fill(0, 128, array_fill(0, 128, $color));
+		// $custom->colors = str_repeat(Binary::writeUnsignedVarInt($color->toABGR()), 128 * 128);
+		
+		$original->colors = new MapImage(array_fill(0, 128, array_fill(0, 128, $color)));
+		$custom->colors = new MapImage(array_fill(0, 128, array_fill(0, 128, $color)));
+		
+		// $original->encode();
+		// $custom->encode();
+		return $original->getBuffer() === $custom->getBuffer();
+	}
 }
