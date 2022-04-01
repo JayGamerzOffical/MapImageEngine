@@ -173,8 +173,8 @@ class MapImage {
 	 */
 	public function generateBatchedMapImagesPacket(int $compression_level = 6) {
 		foreach ($this->chunks as $chunk) {
-			$pk = new CompressTask($chunk->generateMapImagePacket(), function () use ($session, $chunk->generateMapImagePacket()) {
-				$session->sendDataPacket($packet);
+			$pk = new CompressTask($chunk->generateMapImagePacket(), function () use ($chunk->generateMapImagePacket()) {
+				// $session->sendDataPacket($packet);
 			});
 			
 			Server::getInstance()->getAsyncPool()->submitTask($pk);
@@ -199,8 +199,8 @@ class MapImage {
 	public function generateBatchedCustomMapImagesPacket(int $compression_level = 6) {
 		
 		foreach ($this->chunks as $chunk) {
-			$pk = new CompressTask($chunk->generateCustomMapImagePacket(), function () use ($session, $chunk->generateCustomMapImagePacket()) {
-				$session->sendDataPacket($packet);
+			$pk = new CompressTask($chunk->generateCustomMapImagePacket(), function () use ($chunk->generateCustomMapImagePacket()) {
+				// $session->sendDataPacket($packet);
 			});
 			
 			Server::getInstance()->getAsyncPool()->submitTask($pk);
