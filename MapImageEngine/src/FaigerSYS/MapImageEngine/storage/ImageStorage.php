@@ -121,8 +121,8 @@ class ImageStorage {
 				foreach ($image->getChunks() as $chunks) {
 					foreach ($chunks as $chunk) {
 						foreach ([$chunk->generateCustomMapImagePacket(), $chunk->generateMapImagePacket()] as $packet){
-							$pk = new CompressTask($packet, function () use ($session, $packet) {
-								$session->sendDataPacket($packet);
+							$pk = new CompressTask($packet, function () use ($packet) {
+								// $session->sendDataPacket($packet);
 							});
 							
 							Server::getInstance()->getAsyncPool()->submitTask($pk);
@@ -153,8 +153,8 @@ class ImageStorage {
 					// $pk->encode();
 					
 					foreach ([$chunk->generateCustomMapImagePacket(), $chunk->generateMapImagePacket()] as $packet){
-						$pk = new CompressTask($packet, function () use ($session, $packet) {
-							$session->sendDataPacket($packet);
+						$pk = new CompressTask($packet, function () use ($packet) {
+							// $session->sendDataPacket($packet);
 						});
 						
 						Server::getInstance()->getAsyncPool()->submitTask($pk);
