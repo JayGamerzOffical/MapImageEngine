@@ -1,8 +1,9 @@
 <?php
+
 namespace FaigerSYS\MapImageEngine\storage;
 
 use pocketmine\utils\BinaryStream;
-use pocketmine\utils\UUID;
+use Ramsey\Uuid\Uuid;
 
 use FaigerSYS\MapImageEngine\MapImageEngine;
 
@@ -14,7 +15,7 @@ class OldFormatConverter {
 			$buffer->put('MIEI');
 			$buffer->putInt(MapImage::CURRENT_VERSION);
 			$buffer->putByte(0);
-			$buffer->put(UUID::fromRandom()->toBinary());
+			$buffer->put(Uuid::uuid4()->getBytes());
 			
 			$image = @gzinflate($data);
 			if ($image) {
@@ -47,7 +48,7 @@ class OldFormatConverter {
 				return;
 			}
 			
-			return $buffer->buffer;
+			return $buffer->getBuffer();
 		} catch (\Throwable $e) {
 			return;
 		}
