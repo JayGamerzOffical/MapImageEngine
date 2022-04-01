@@ -82,8 +82,9 @@ class MapImageEngine extends PluginBase implements Listener {
 		$this->getServer()->getCommandMap()->register($this->getName(), new MapImageEngineCommand());
 		
 		$item = new FilledMap(new ItemIdentifier(ItemIds::FILLED_MAP, 0));
-		if(!ItemFactory::isRegistered($item->getId())){
-			ItemFactory::register($item, true);
+		$factory = ItemFactory::getInstance();
+		if(!$factory->isRegistered($item->getId())){
+			$factory->register($item, true);
 		}
 		
 		$this->getLogger()->info(CLR::GOLD . TS::translate($is_reload ? 'plugin-loader.reloaded' : 'plugin-loader.loaded'));
