@@ -1,10 +1,13 @@
 <?php
+
 namespace FaigerSYS\MapImageEngine\storage;
 
 use pocketmine\utils\BinaryStream;
-use pocketmine\utils\UUID;
-
+use Ramsey\Uuid\Uuid;
 use pocketmine\network\mcpe\protocol\BatchPacket;
+use pocketmine\Server;
+
+use FaigerSYS\MapImageEngine\task\CompressTask;
 
 class MapImage {
 	
@@ -41,25 +44,25 @@ class MapImage {
 	/** @var MapImageChunk[][] */
 	private $chunks = [];
 	
-	/** @var UUID */
+	/** @var Uuid */
 	private $uuid;
 	
 	/**
 	 * @param int               $blocks_width
 	 * @param int               $blocks_height
 	 * @param MapImageChunk[][] $chunks
-	 * @param UUID              $uuid
+	 * @param Uuid              $uuid
 	 * @param int               $default_chunk_width
 	 * @param int               $default_chunk_height
 	 */
-	public function __construct(int $blocks_width, int $blocks_height, array $chunks = [], UUID $uuid = null, int $default_chunk_width = 128, int $default_chunk_height = 128) {
+	public function __construct(int $blocks_width, int $blocks_height, array $chunks = [], ?Uuid $uuid = null, int $default_chunk_width = 128, int $default_chunk_height = 128) {
 		if ($blocks_width < 0 || $blocks_height < 0) {
 			throw new \InvalidArgumentException('Blocks width/height must be greater than 0');
 		}
 		
 		$this->blocks_width = $blocks_width;
 		$this->blocks_height = $blocks_height;
-		$this->uuid = $uuid ?? UUID::fromRandom();
+		$this->uuid = $uuid ?? Uuid::uuid4();
 		$this->default_chunk_width = $default_chunk_width;
 		$this->default_chunk_height = $default_chunk_height;
 		$this->setChunks($chunks);
@@ -169,11 +172,20 @@ class MapImage {
 	 * @return BatchPacket
 	 */
 	public function generateBatchedMapImagesPacket(int $compression_level = 6) {
-		$pk = new BatchPacket();
-		$pk->setCompressionLevel($compression_level);
 		foreach ($this->chunks as $chunk) {
-			$pk->addPacket($chunk->generateMapImagePacket());
+			$pk = new CompressTask($chunk->generateMapImagePacket(), function () use ($session, $chunk->generateMapImagePacket()) {
+				$session->sendDataPacket($packet);
+			});
+			
+			Server::getInstance()->getAsyncPool()->submitTask($pk);
 		}
+		
+		
+		// $pk = new BatchPacket();
+		// $pk->setCompressionLevel($compression_level);
+		// foreach ($this->chunks as $chunk) {
+			// $pk->addPacket($chunk->generateMapImagePacket());
+		// }
 		return $pk;
 	}
 	
@@ -185,20 +197,29 @@ class MapImage {
 	 * @return BatchPacket
 	 */
 	public function generateBatchedCustomMapImagesPacket(int $compression_level = 6) {
-		$pk = new BatchPacket();
-		$pk->setCompressionLevel($compression_level);
+		
 		foreach ($this->chunks as $chunk) {
-			$pk->addPacket($chunk->generateCustomMapImagePacket());
+			$pk = new CompressTask($chunk->generateCustomMapImagePacket(), function () use ($session, $chunk->generateCustomMapImagePacket()) {
+				$session->sendDataPacket($packet);
+			});
+			
+			Server::getInstance()->getAsyncPool()->submitTask($pk);
 		}
+		
+		// $pk = new BatchPacket();
+		// $pk->setCompressionLevel($compression_level);
+		// foreach ($this->chunks as $chunk) {
+			// $pk->addPacket($chunk->generateCustomMapImagePacket());
+		// }
 		return $pk;
 	}
 	
 	/**
-	 * Returns the image UUID
+	 * Returns the image Uuid
 	 *
-	 * @return UUID
+	 * @return Uuid
 	 */
-	public function getUUID() : UUID {
+	public function getUUID() : Uuid {
 		return $this->uuid;
 	}
 	
@@ -208,7 +229,7 @@ class MapImage {
 	 * @return string
 	 */
 	public function getHashedUUID() : string {
-		return hash('sha1', $this->uuid->toBinary());
+		return hash('sha1', $this->uuid->getBytes());
 	}
 	
 	/**
@@ -247,7 +268,7 @@ class MapImage {
 				$buffer = new BinaryStream($buffer);
 			}
 			
-			$uuid = UUID::fromBinary($buffer->get(16), 4);
+			$uuid = Uuid::isValid($buffer->get(16)) ? Uuid::fromBytes($buffer->get(16)) : null;
 			
 			$blocks_width = $buffer->getInt();
 			$blocks_height = $buffer->getInt();
@@ -286,7 +307,7 @@ class MapImage {
 				$this->chunks[$y][$x] = clone $this->chunks[$y][$x];
 			}
 		}
-		$this->uuid = UUID::fromRandom();
+		$this->uuid = Uuid::uuid4();
 	}
 	
 }
