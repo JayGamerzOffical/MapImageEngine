@@ -252,8 +252,8 @@ class MapImageChunk {
 		$pk = new CustomClientboundMapItemDataPacket();
 		$pk->mapId = $map_id ?? $this->map_id;
 		$pk->scale = 0;
-		$pk->width = $this->width;
-		$pk->height = $this->height;
+		// $pk->width = $this->width;
+		// $pk->height = $this->height;
 		
 		$colors = null;
 		$generate_cache = false;
