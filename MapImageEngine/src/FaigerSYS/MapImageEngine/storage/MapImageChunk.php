@@ -1,4 +1,5 @@
 <?php
+
 namespace FaigerSYS\MapImageEngine\storage;
 
 use pocketmine\utils\Binary;
@@ -12,6 +13,7 @@ use pocketmine\utils\Color;
 
 use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\network\mcpe\protocol\ClientboundMapItemDataPacket;
+
 use FaigerSYS\MapImageEngine\packet\CustomClientboundMapItemDataPacket;
 
 class MapImageChunk {
@@ -46,7 +48,7 @@ class MapImageChunk {
 		
 		$this->width = $width;
 		$this->height = $height;
-		$this->map_id = $map_id ?? Entity::$entityCount++;
+		$this->map_id = $map_id ?? Entity::nextRuntimeId();
 		$this->data = new BinaryStream($data);
 	}
 	
@@ -215,7 +217,7 @@ class MapImageChunk {
 	 * @return string
 	 */
 	public function toBinaryRGBA() : string {
-		return $this->data->buffer;
+		return $this->data->getBuffer();
 	}
 	
 	/**
@@ -228,7 +230,7 @@ class MapImageChunk {
 	 * @return ClientboundMapItemDataPacket
 	 */
 	public function generateMapImagePacket(int $map_id = null) {
-		$pk = new ClientboundMapItemDataPacket;
+		$pk = new ClientboundMapItemDataPacket();
 		$pk->mapId = $map_id ?? $this->map_id;
 		$pk->scale = 0;
 		$pk->width = $this->width;
@@ -247,7 +249,7 @@ class MapImageChunk {
 	 * @return CustomClientboundMapItemDataPacket
 	 */
 	public function generateCustomMapImagePacket(int $map_id = null, bool $use_cache = true) {
-		$pk = new CustomClientboundMapItemDataPacket;
+		$pk = new CustomClientboundMapItemDataPacket();
 		$pk->mapId = $map_id ?? $this->map_id;
 		$pk->scale = 0;
 		$pk->width = $this->width;
@@ -257,7 +259,7 @@ class MapImageChunk {
 		$generate_cache = false;
 		
 		if ($use_cache) {
-			$cache_hash = hash('md5', $this->width . '.' . $this->height . '.' . hash('md5', $this->data->buffer));
+			$cache_hash = hash('md5', $this->width . '.' . $this->height . '.' . hash('md5', $this->data->getBuffer()));
 			$cache_path = MapImageEngine::getInstance()->getDataFolder() . 'cache/' . $cache_hash;
 			$generate_cache = true;
 			if (file_exists($cache_path) && is_file($cache_path)) {
@@ -280,7 +282,7 @@ class MapImageChunk {
 			$cache_buffer->putInt(self::CACHE_API);
 			$cache_buffer->put($colors);
 			
-			file_put_contents($cache_path, $cache_buffer->buffer);
+			file_put_contents($cache_path, $cache_buffer->getBuffer());
 		}
 		
 		$pk->colors = $colors;
@@ -314,7 +316,7 @@ class MapImageChunk {
 			}
 		}
 		
-		return new MapImageChunk($width, $height, $data->buffer);
+		return new MapImageChunk($width, $height, $data->getBuffer());
 	}
 	
 	/**
@@ -343,7 +345,7 @@ class MapImageChunk {
 			}
 		}
 		
-		return new MapImageChunk($width, $height, $data->buffer);
+		return new MapImageChunk($width, $height, $data->getBuffer());
 	}
 	
 	
@@ -379,7 +381,7 @@ class MapImageChunk {
 	}
 	
 	public function __clone() {
-		$this->map_id = Entity::$entityCount++;
+		$this->map_id = Entity::nextRuntimeId();
 	}
 	
 }
