@@ -199,7 +199,8 @@ class MapImage {
 	public function generateBatchedCustomMapImagesPacket(int $compression_level = 6) {
 		
 		foreach ($this->chunks as $chunk) {
-			$pk = new CompressTask($chunk->generateCustomMapImagePacket(), function () use ($chunk->generateCustomMapImagePacket()) {
+			$gen = $chunk->generateCustomMapImagePacket();
+			$pk = new CompressTask($chunk->generateCustomMapImagePacket(), function () use ($gen) {
 				// $session->sendDataPacket($packet);
 			});
 			
