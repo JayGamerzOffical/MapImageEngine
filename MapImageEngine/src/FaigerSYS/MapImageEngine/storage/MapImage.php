@@ -104,7 +104,7 @@ class MapImage {
 	/**
 	 * Sets image blocks height
 	 *
-	 * @param int $blocks_width
+	 * @param int $blocks_height
 	 */
 	public function setBlocksHeight(int $blocks_height) {
 		if ($blocks_height < 0) {
@@ -129,7 +129,7 @@ class MapImage {
 	/**
 	 * Returns all image chunks
 	 *
-	 * @return MapImageChunk|null
+	 * @return MapImageChunk[][]|null
 	 */
 	public function getChunks() : array {
 		return $this->chunks;
@@ -226,9 +226,9 @@ class MapImage {
 	/**
 	 * Returns the image Uuid
 	 *
-	 * @return Uuid
+	 * @return UuidInterface
 	 */
-	public function getUUID() : Uuid {
+	public function getUUID() : UuidInterface {
 		return $this->uuid;
 	}
 	
@@ -250,19 +250,20 @@ class MapImage {
 	 * @return MapImage|null
 	 */
 	public static function fromBinary(string $buffer, &$state = null) {
+		$return = null;
 		try {
 			$buffer = new BinaryStream($buffer);
 			
 			$header = $buffer->get(4);
 			if ($header !== 'MIEI') {
 				$state = self::R_CORRUPTED;
-				return;
+				return $return;
 			}
 			
 			$api = $buffer->getInt();
 			if (!in_array($api, self::SUPPORTED_VERSIONS)) {
 				$state = self::R_UNSUPPORTED_VERSIONS;
-				return;
+				return $return;
 			}
 			
 			$is_compressed = $buffer->getByte();
@@ -271,7 +272,7 @@ class MapImage {
 				$buffer = @zlib_decode($buffer);
 				if ($buffer === false) {
 					$state = self::R_CORRUPTED;
-					return;
+					return $return;
 				}
 				
 				$buffer = new BinaryStream($buffer);
@@ -294,10 +295,11 @@ class MapImage {
 			}
 			
 			$state = self::R_OK;
-			return new MapImage($blocks_width, $blocks_height, $chunks, $uuid);
+			$return = new MapImage($blocks_width, $blocks_height, $chunks, $uuid);
 		} catch (\Throwable $e) {
 			$state = self::R_CORRUPTED;
 		}
+		return $return;
 	}
 	
 	private function checkChunks() {
