@@ -90,7 +90,7 @@ class MapImageChunk {
 	 *
 	 * @return int|null
 	 */
-	public function getRGBA(int $x, int $y) : int {
+	public function getRGBA(int $x, int $y) : ?int {
 		$this->data->setOffset($this->getStartOffset($x, $y));
 		return (int) $this->data->getInt();
 	}
@@ -129,10 +129,10 @@ class MapImageChunk {
 	 */
 	public function setABGR(int $x, int $y, int $color) {
 		$pos = $this->getStartOffset($x, $y);
-		$this->data->buffer[$pos++] = chr($color >> 24 & 0xff);
-		$this->data->buffer[$pos++] = chr($color >> 16 & 0xff);
-		$this->data->buffer[$pos++] = chr($color >> 8  & 0xff);
-		$this->data->buffer[$pos]   = chr($color       & 0xff);
+		$this->data->getBuffer()[$pos++] = chr($color >> 24 & 0xff);
+		$this->data->getBuffer()[$pos++] = chr($color >> 16 & 0xff);
+		$this->data->getBuffer()[$pos++] = chr($color >> 8  & 0xff);
+		$this->data->getBuffer()[$pos]   = chr($color       & 0xff);
 	}
 	
 	/**
@@ -159,7 +159,7 @@ class MapImageChunk {
 	 */
 	public function toArrayRGBA() : array {
 		$colors = [];
-		$this->data->offset = 0;
+		$this->data->rewind();
 		for ($y = 0; $y < $this->height; $y++) {
 			for ($x = 0; $x < $this->width; $x++) {
 				$colors[$y][$x] = (int) $this->data->getInt();
@@ -176,7 +176,7 @@ class MapImageChunk {
 	 */
 	public function toArrayPrettyRGBA() : array {
 		$colors = [];
-		$this->data->offset = 0;
+		$this->data->rewind();
 		for ($y = 0; $y < $this->height; $y++) {
 			for ($x = 0; $x < $this->width; $x++) {
 				$colors[$y][$x] = [
@@ -198,7 +198,7 @@ class MapImageChunk {
 	 */
 	public function toArrayABGR() : array {
 		$colors = [];
-		$this->data->offset = 0;
+		$this->data->rewind();
 		for ($y = 0; $y < $this->height; $y++) {
 			for ($x = 0; $x < $this->width; $x++) {
 				$colors[$y][$x] = $this->data->getLInt() & 0xffffffff;
@@ -230,7 +230,7 @@ class MapImageChunk {
 		$pk->scale = 0;
 		$pk->xOffset = $this->width;
 		$pk->yOffset = $this->height;
-		$pk->colors = $this->toArrayColor()[$pk->height][$pk->width];
+		$pk->colors = $this->toArrayColor()[$this->height][$this->width];
 		return $pk;
 	}
 	
