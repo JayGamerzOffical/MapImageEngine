@@ -105,8 +105,12 @@ class MapImageEngine extends PluginBase implements Listener {
 	
 	private function loadImages(bool $is_reload = false) {
 		$path = $this->getDataFolder() . 'images/';
-		$storage = $this->storage ? $this->storage : new ImageStorage;
-		
+		$storage = null;
+		if($this->storage == true){
+			$storage = $this->storage;
+		}else{
+			$storage = new ImageStorage;
+		}
 		$files = array_filter(
 			scandir($path),
 			function ($file) use ($path) {
