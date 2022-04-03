@@ -16,9 +16,9 @@ class FilledMap extends Item {
 	const CURRENT_MAP_API = 3;
 	const SUPPORTED_MAP_API = [3];
 	
-	public function __construct(ItemIdentifier $Identifier)
+	public function __construct()
 	{
-		parent::__construct($Identifier, "Map");
+		parent::__construct(new ItemIdentifier(ItemIds::FILLED_MAP, 0), "Map");
 		$this->updateMapData();
 	}
 	

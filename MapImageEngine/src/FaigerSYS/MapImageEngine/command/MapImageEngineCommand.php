@@ -6,12 +6,9 @@ use pocketmine\utils\TextFormat as CLR;
 
 use pocketmine\player\Player;
 use pocketmine\command\CommandSender;
-use pocketmine\command\ConsoleCommandSender;
 
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginOwned;
-
-use pocketmine\plugin\Plugin;
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -259,7 +256,7 @@ class MapImageEngineCommand extends Command implements PluginOwned, Listener {
 		}
 	}
 	
-	public function getOwningPlugin() : Plugin {
+	public function getOwningPlugin() : MapImageEngine {
 		return MapImageEngine::getInstance();
 	}
 	

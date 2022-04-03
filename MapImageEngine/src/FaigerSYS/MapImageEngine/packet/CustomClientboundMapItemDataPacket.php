@@ -13,10 +13,11 @@ use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\PacketHandlerInterface;
 use pocketmine\network\mcpe\protocol\ClientboundMapItemDataPacket;
+use pocketmine\network\mcpe\protocol\PacketDecodeException;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use function count;
-
-class CustomClientboundMapItemDataPacket extends DataPacket implements ClientboundPacket{
+//                                        not sure but i need it for handle()
+class CustomClientboundMapItemDataPacket extends ClientboundMapItemDataPacket {
     public const NETWORK_ID = ProtocolInfo::CLIENTBOUND_MAP_ITEM_DATA_PACKET;
  
     public const BITFLAG_TEXTURE_UPDATE = 0x02;

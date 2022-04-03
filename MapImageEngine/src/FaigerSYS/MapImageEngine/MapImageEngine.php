@@ -12,8 +12,6 @@ use pocketmine\item\ItemIdentifier;
 use pocketmine\item\ItemFactory;
 use FaigerSYS\MapImageEngine\item\FilledMap;
 
-use pocketmine\block\tile\ItemFrame;
-
 use pocketmine\event\Listener;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\event\world\ChunkLoadEvent;
@@ -28,8 +26,11 @@ use FaigerSYS\MapImageEngine\command\MapImageEngineCommand;
 
 use pocketmine\network\mcpe\protocol\MapInfoRequestPacket;
 use FaigerSYS\MapImageEngine\packet\CustomClientboundMapItemDataPacket;
+use pocketmine\block\tile\ItemFrame;
+use pocketmine\utils\SingletonTrait;
 
 class MapImageEngine extends PluginBase implements Listener {
+	use SingletonTrait;
 	
 	/** @var bool */
 	private static $is_custom_pk_suppoted;
@@ -42,7 +43,7 @@ class MapImageEngine extends PluginBase implements Listener {
 	
 	public function onEnable(): void {
 		$old_plugin = self::$instance;
-		self::$instance = $this;
+		self::setInstance($this);
 		$is_reload = $old_plugin instanceof MapImageEngine;
 		
 		if ($is_reload == false) {
@@ -186,9 +187,9 @@ class MapImageEngine extends PluginBase implements Listener {
 						$this->getLogger()->warning(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-corrupted'));
 						break;
 						
-					case MapImage::R_UNSUPPORTED_API:
-						$this->getLogger()->warning(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-unsupported-api'));
-						break;
+					// case MapImage::R_UNSUPPORTED_API:
+						// $this->getLogger()->warning(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-unsupported-api'));
+						// break;
 				}
 			}
 		}
@@ -207,7 +208,7 @@ class MapImageEngine extends PluginBase implements Listener {
 		if ($e->getPacket() instanceof MapInfoRequestPacket) {
 			$pk = $this->getImageStorage()->getCachedPacket($e->getPacket()->mapId);
 			if ($pk !== null) {
-				$e->getOrigin()->getPlayer()->sendDataPacket($pk);
+				$e->getOrigin()->getPlayer()->getNetworkSession()->sendDataPacket($pk);
 			}
 			$e->cancel();
 		}
@@ -218,7 +219,7 @@ class MapImageEngine extends PluginBase implements Listener {
 	 */
 	public function onChunkLoad(ChunkLoadEvent $e) {
 		foreach ($e->getChunk()->getTiles() as $frame) {
-			if ($frame instanceof ItemFrame) {
+			if($frame instanceof ItemFrame){
 				$item = $frame->getItem();
 				if ($item instanceof FilledMap) {
 					$frame->setItem($item);
@@ -226,13 +227,8 @@ class MapImageEngine extends PluginBase implements Listener {
 			}
 		}
 	}
-	
-	public static function getInstance() : MapImageEngine {
-		return self::$instance;
-	}
-	
+
 	public static function isCustomPacketSupported() : bool {
 		return self::$is_custom_pk_suppoted;
 	}
-	
 }

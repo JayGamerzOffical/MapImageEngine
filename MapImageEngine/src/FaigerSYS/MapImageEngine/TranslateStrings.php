@@ -28,5 +28,4 @@ class TranslateStrings {
 	public static function translate(string $str, ...$args) {
 		return sprintf(self::$strings[$str] ?? $str, ...$args);
 	}
-	
 }

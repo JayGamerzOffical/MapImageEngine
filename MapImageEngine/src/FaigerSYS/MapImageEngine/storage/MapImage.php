@@ -7,7 +7,10 @@ use Ramsey\Uuid\Uuid;
 use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\Server;
 
-use FaigerSYS\MapImageEngine\task\CompressTask;
+use pocketmine\network\mcpe\compression\ZlibCompressor;
+use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
+use pocketmine\network\mcpe\protocol\serializer\PacketBatch;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
 
 class MapImage {
 	
@@ -168,17 +171,20 @@ class MapImage {
 	 * Generates bathed packet for all of image chunks
 	 *
 	 * @param int $compression_level
-	 *
-	 * @return BatchPacket
 	 */
 	public function generateBatchedMapImagesPacket(int $compression_level = 6) {
+		$compressor = new ZlibCompressor($compression_level, ZlibCompressor::DEFAULT_THRESHOLD, ZlibCompressor::DEFAULT_MAX_DECOMPRESSION_SIZE);
+		$encoderContext = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
 		foreach ($this->chunks as $chunk) {
-			$gen = $chunk->generateMapImagePacket();
-			$pk = new CompressTask($chunk->generateMapImagePacket(), function () use ($gen) {
+			// $gen = $chunk->generateMapImagePacket();
+			// $pk = new CompressTask($chunk->generateMapImagePacket(), function () use ($gen) {
 				// $session->sendDataPacket($packet);
-			});
+			// });
 			
-			Server::getInstance()->getAsyncPool()->submitTask($pk);
+			// Server::getInstance()->getAsyncPool()->submitTask($pk);
+			foreach($chunk as $chunkd){
+				$compressor->compress(PacketBatch::fromPackets($encoderContext, $chunkd->generateMapImagePacket())->getBuffer());
+			}
 		}
 		
 		
@@ -187,25 +193,27 @@ class MapImage {
 		// foreach ($this->chunks as $chunk) {
 			// $pk->addPacket($chunk->generateMapImagePacket());
 		// }
-		return $pk;
+		return $compressor;
 	}
 	
 	/**
 	 * Generates bathed packet for all of image chunks
 	 *
 	 * @param int $compression_level
-	 *
-	 * @return BatchPacket
 	 */
 	public function generateBatchedCustomMapImagesPacket(int $compression_level = 6) {
-		
+		$compressor = new ZlibCompressor($compression_level, ZlibCompressor::DEFAULT_THRESHOLD, ZlibCompressor::DEFAULT_MAX_DECOMPRESSION_SIZE);
+		$encoderContext = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
 		foreach ($this->chunks as $chunk) {
-			$gen = $chunk->generateCustomMapImagePacket();
-			$pk = new CompressTask($chunk->generateCustomMapImagePacket(), function () use ($gen) {
+			// $gen = $chunk->generateCustomMapImagePacket();
+			// $pk = new CompressTask($chunk->generateCustomMapImagePacket(), function () use ($gen) {
 				// $session->sendDataPacket($packet);
-			});
+			// });
 			
-			Server::getInstance()->getAsyncPool()->submitTask($pk);
+			// Server::getInstance()->getAsyncPool()->submitTask($pk);
+			foreach($chunk as $chunkd){
+				$compressor->compress(PacketBatch::fromPackets($encoderContext, $chunkd->generateMapImagePacket())->getBuffer());
+			}
 		}
 		
 		// $pk = new BatchPacket();
@@ -213,7 +221,7 @@ class MapImage {
 		// foreach ($this->chunks as $chunk) {
 			// $pk->addPacket($chunk->generateCustomMapImagePacket());
 		// }
-		return $pk;
+		return $compressor;
 	}
 	
 	/**
@@ -237,7 +245,7 @@ class MapImage {
 	/**
 	 * Creates new MapImage object from MIE image binary
 	 *
-	 * @param stirng $buffer
+	 * @param string $buffer
 	 * @param int    &$state
 	 *
 	 * @return MapImage|null

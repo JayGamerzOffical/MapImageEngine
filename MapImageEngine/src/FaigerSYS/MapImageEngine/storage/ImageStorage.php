@@ -9,7 +9,10 @@ use pocketmine\network\mcpe\protocol\BatchPacket;
 
 use FaigerSYS\MapImageEngine\MapImageEngine;
 
-use FaigerSYS\MapImageEngine\task\CompressTask;
+use pocketmine\network\mcpe\compression\ZlibCompressor;
+use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
+use pocketmine\network\mcpe\protocol\serializer\PacketBatch;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
 
 class ImageStorage {
 	
@@ -107,6 +110,8 @@ class ImageStorage {
 	 * @param int      $chunk_y
 	 */
 	public function regeneratePacketsCache(MapImage $image = null, int $chunk_x = null, int $chunk_y = null) {
+		$compressor = new ZlibCompressor(ZlibCompressor::DEFAULT_LEVEL, ZlibCompressor::DEFAULT_THRESHOLD, ZlibCompressor::DEFAULT_MAX_DECOMPRESSION_SIZE);
+		$encoderContext = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
 		if ($image === null) {
 			$this->cache = [];
 			foreach ($this->images as $image) {
@@ -121,11 +126,17 @@ class ImageStorage {
 				foreach ($image->getChunks() as $chunks) {
 					foreach ($chunks as $chunk) {
 						foreach ([$chunk->generateCustomMapImagePacket(), $chunk->generateMapImagePacket()] as $packet){
-							$pk = new CompressTask($packet, function () use ($packet) {
-								// $session->sendDataPacket($packet);
-							});
+							if (MapImageEngine::isCustomPacketSupported()) {
+								$packet = $chunk->generateCustomMapImagePacket();
+							} else {
+								$packet = $chunk->generateMapImagePacket();
+							}
+							// $pk = new CompressTask($packet, function () use ($packet, $compressor, $encoderContext) {
+							$compressor->compress(PacketBatch::fromPackets($encoderContext, $packet)->getBuffer());
+								/// $session->sendDataPacket($packet);
+							// });
 							
-							Server::getInstance()->getAsyncPool()->submitTask($pk);
+							// Server::getInstance()->getAsyncPool()->submitTask($pk);
 						}
 						
 						
@@ -137,7 +148,7 @@ class ImageStorage {
 							// $pk->addPacket($chunk->generateMapImagePacket());
 						// }
 						// $pk->encode();
-						$this->packet_cache[$chunk->getMapId()] = $pk;
+						$this->packet_cache[$chunk->getMapId()] = $compressor;
 					}
 				}
 			} else {
@@ -153,14 +164,20 @@ class ImageStorage {
 					// $pk->encode();
 					
 					foreach ([$chunk->generateCustomMapImagePacket(), $chunk->generateMapImagePacket()] as $packet){
-						$pk = new CompressTask($packet, function () use ($packet) {
+						if (MapImageEngine::isCustomPacketSupported()) {
+							$packet = $chunk->generateCustomMapImagePacket();
+						} else {
+							$packet = $chunk->generateMapImagePacket();
+						}
+						// $pk = new CompressTask($packet, function () use ($packet, $compressor, $encoderContext) {
+						$compressor->compress(PacketBatch::fromPackets($encoderContext, $packet)->getBuffer());
 							// $session->sendDataPacket($packet);
-						});
+						// });
 						
-						Server::getInstance()->getAsyncPool()->submitTask($pk);
+						// Server::getInstance()->getAsyncPool()->submitTask($pk);
 					}
 					
-					$this->packet_cache[$chunk->getMapId()] = $pk;
+					$this->packet_cache[$chunk->getMapId()] = $packet;
 				}
 			}
 		}
@@ -248,10 +265,6 @@ class ImageStorage {
 	
 	/**
 	 * Returns cached batched map image packet
-	 *
-	 * @param int $map_id
-	 * 
-	 * @return BatchPacket
 	 */
 	public function getCachedPacket(int $map_id) {
 		if (isset($this->packet_cache[$map_id])) {
