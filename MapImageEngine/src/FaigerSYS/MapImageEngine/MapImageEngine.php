@@ -55,7 +55,7 @@ class MapImageEngine extends PluginBase implements Listener {
 		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-long-loading'));
 		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-1.1-update'));
 		
-		if ($is_reload) {
+		if ($is_reload === true) {
 			$this->storage = $old_plugin->storage;
 		}
 		
