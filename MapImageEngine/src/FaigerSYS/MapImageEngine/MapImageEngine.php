@@ -5,10 +5,6 @@ namespace FaigerSYS\MapImageEngine;
 use pocketmine\plugin\PluginBase;
 
 use pocketmine\utils\TextFormat as CLR;
-
-use pocketmine\item\Item;
-use pocketmine\item\ItemIds;
-use pocketmine\item\ItemIdentifier;
 use pocketmine\item\ItemFactory;
 use FaigerSYS\MapImageEngine\item\FilledMap;
 
@@ -85,7 +81,7 @@ class MapImageEngine extends PluginBase implements Listener {
 		
 		$this->getServer()->getCommandMap()->register($this->getName(), new MapImageEngineCommand());
 		
-		$item = new FilledMap(new ItemIdentifier(ItemIds::FILLED_MAP, 0));
+		$item = new FilledMap();
 		$factory = ItemFactory::getInstance();
 		if(!$factory->isRegistered($item->getId())){
 			$factory->register($item, true);
