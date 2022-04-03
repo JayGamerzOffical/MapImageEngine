@@ -45,12 +45,11 @@ class MapImageEngine extends PluginBase implements Listener {
 		self::$instance = $this;
 		$is_reload = $old_plugin instanceof MapImageEngine;
 		
-		// if (!$is_reload) {
-		// 	TS::init();
-		// }
+		if ($is_reload === false) {
+			TS::init();
+		}
 		
-		$this->getLogger()->info(CLR::GOLD . TS::translate('plugin-loader.reloading'));
-		$this->getLogger()->info(CLR::GOLD . TS::translate('plugin-loader.loading'));
+		$this->getLogger()->info(CLR::GOLD . $is_reload === true ? TS::translate('plugin-loader.reloading') : TS::translate('plugin-loader.loading'));
 		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-instruction'));
 		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-long-loading'));
 		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-1.1-update'));
