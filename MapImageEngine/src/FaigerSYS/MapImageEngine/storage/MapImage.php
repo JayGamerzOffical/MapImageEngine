@@ -131,7 +131,7 @@ class MapImage {
 	 *
 	 * @return MapImageChunk[][]|null
 	 */
-	public function getChunks() : array {
+	public function getChunks() {
 		return $this->chunks;
 	}
 	
