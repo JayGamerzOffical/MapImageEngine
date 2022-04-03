@@ -9,9 +9,8 @@ use pocketmine\entity\Entity;
 
 use FaigerSYS\MapImageEngine\MapImageEngine;
 
-use pocketmine\utils\Color;
+use pocketmine\color\Color;
 
-use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\network\mcpe\protocol\ClientboundMapItemDataPacket;
 
 use FaigerSYS\MapImageEngine\packet\CustomClientboundMapItemDataPacket;
@@ -91,10 +90,10 @@ class MapImageChunk {
 	/**
 	 * Returns RGBA color at specified position
 	 *
-	 * @return int
+	 * @return int|null
 	 */
 	public function getRGBA(int $x, int $y) : int {
-		$this->data->offset = $this->getStartOffset($x, $y);
+		$this->data->setOffset($this->getStartOffset($x, $y));
 		return (int) $this->data->getInt();
 	}
 	
@@ -107,10 +106,10 @@ class MapImageChunk {
 	 */
 	public function setRGBA(int $x, int $y, int $color) {
 		$pos = $this->getStartOffset($x, $y);
-		$this->data->buffer[$pos++] = chr($color       & 0xff);
-		$this->data->buffer[$pos++] = chr($color >> 8  & 0xff);
-		$this->data->buffer[$pos++] = chr($color >> 16 & 0xff);
-		$this->data->buffer[$pos]   = chr($color >> 24 & 0xff);
+		$this->data->getBuffer()[$pos++] = chr($color       & 0xff);
+		$this->data->getBuffer()[$pos++] = chr($color >> 8  & 0xff);
+		$this->data->getBuffer()[$pos++] = chr($color >> 16 & 0xff);
+		$this->data->getBuffer()[$pos]   = chr($color >> 24 & 0xff);
 	}
 	
 	/**
@@ -119,7 +118,7 @@ class MapImageChunk {
 	 * @return int
 	 */
 	public function getABGR(int $x, int $y) : int {
-		$this->data->offset = $this->getStartOffset($x, $y);
+		$this->data->setOffset($this->getStartOffset($x, $y));
 		return (int) $this->data->getLInt() & 0xffffffff;
 	}
 	
@@ -145,7 +144,7 @@ class MapImageChunk {
 	 */
 	public function toArrayColor() : array {
 		$colors = [];
-		$this->data->offset = 0;
+		$this->data->rewind();
 		for ($y = 0; $y < $this->height; $y++) {
 			for ($x = 0; $x < $this->width; $x++) {
 				$color = $this->data->getInt();
@@ -222,10 +221,8 @@ class MapImageChunk {
 	
 	/**
 	 * Generates map image packet
-	 *
-	 * @param int  $compression_level
+	 *=
 	 * @param int  $map_id
-	 * @param bool $use_cache
 	 *
 	 * @return ClientboundMapItemDataPacket
 	 */
@@ -233,16 +230,15 @@ class MapImageChunk {
 		$pk = new ClientboundMapItemDataPacket();
 		$pk->mapId = $map_id ?? $this->map_id;
 		$pk->scale = 0;
-		$pk->width = $this->width;
-		$pk->height = $this->height;
-		$pk->colors = $this->toArrayColor();
+		$pk->xOffset = $this->width;
+		$pk->yOffset = $this->height;
+		$pk->colors = $this->toArrayColor()[$pk->height][$pk->width];
 		return $pk;
 	}
 	
 	/**
 	 * Generates custom map image packet
 	 *
-	 * @param int  $compression_level
 	 * @param int  $map_id
 	 * @param bool $use_cache
 	 *
@@ -252,11 +248,12 @@ class MapImageChunk {
 		$pk = new CustomClientboundMapItemDataPacket();
 		$pk->mapId = $map_id ?? $this->map_id;
 		$pk->scale = 0;
-		// $pk->width = $this->width;
-		// $pk->height = $this->height;
+		$pk->xOffset = $this->width;
+		$pk->yOffset = $this->height;
 		
 		$colors = null;
 		$generate_cache = false;
+		$cache_path = null;
 		
 		if ($use_cache) {
 			$cache_hash = hash('md5', $this->width . '.' . $this->height . '.' . hash('md5', $this->data->getBuffer()));

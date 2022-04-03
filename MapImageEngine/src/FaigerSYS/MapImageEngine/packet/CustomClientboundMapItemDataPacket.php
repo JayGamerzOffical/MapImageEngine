@@ -15,6 +15,8 @@ use pocketmine\network\mcpe\protocol\PacketHandlerInterface;
 use pocketmine\network\mcpe\protocol\ClientboundMapItemDataPacket;
 use pocketmine\network\mcpe\protocol\PacketDecodeException;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
+use pocketmine\utils\BinaryStream;
+
 use function count;
 //                                        not sure but i need it for handle()
 class CustomClientboundMapItemDataPacket extends ClientboundMapItemDataPacket {
@@ -164,6 +166,16 @@ class CustomClientboundMapItemDataPacket extends ClientboundMapItemDataPacket {
     public function handle(PacketHandlerInterface $handler) : bool{
         return $handler->handleClientboundMapItemData($this);
     }
+
+    public static function prepareColors(array $colors, int $width, int $height) {
+		$buffer = new BinaryStream;
+		for ($y = 0; $y < $height; $y++) {
+			for ($x = 0; $x < $width; $x++) {
+				$buffer->putUnsignedVarInt($colors[$y][$x]);
+			}
+		}
+		return $buffer->getBuffer();
+	}
 	
 	public static function checkCompatiblity() : bool {
 		$original = new ClientboundMapItemDataPacket();
