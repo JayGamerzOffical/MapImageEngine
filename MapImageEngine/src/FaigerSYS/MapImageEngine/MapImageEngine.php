@@ -35,9 +35,6 @@ class MapImageEngine extends PluginBase implements Listener {
 	/** @var bool */
 	private static $is_custom_pk_suppoted;
 	
-	/** @var MapImageEngine */
-	private static $instance;
-	
 	/** @var ImageStorage */
 	private $storage;
 	
