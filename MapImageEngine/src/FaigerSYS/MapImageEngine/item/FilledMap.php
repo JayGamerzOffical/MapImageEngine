@@ -61,7 +61,7 @@ class FilledMap extends Item {
 		}
 		
 		$tag = $this->getNamedTag();
-		$tag->setLong('map_uuid', $map_id, true);
+		$tag->setLong('map_uuid', $map_id);
 		$this->setNamedTag($tag);
 	}
 	

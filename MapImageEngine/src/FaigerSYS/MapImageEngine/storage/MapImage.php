@@ -4,13 +4,12 @@ namespace FaigerSYS\MapImageEngine\storage;
 
 use pocketmine\utils\BinaryStream;
 use Ramsey\Uuid\Uuid;
-use pocketmine\network\mcpe\protocol\BatchPacket;
-use pocketmine\Server;
 
 use pocketmine\network\mcpe\compression\ZlibCompressor;
 use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
 use pocketmine\network\mcpe\protocol\serializer\PacketBatch;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
+use Ramsey\Uuid\UuidInterface;
 
 class MapImage {
 	
@@ -47,18 +46,18 @@ class MapImage {
 	/** @var MapImageChunk[][] */
 	private $chunks = [];
 	
-	/** @var Uuid */
+	/** @var UuidInterface */
 	private $uuid;
 	
 	/**
 	 * @param int               $blocks_width
 	 * @param int               $blocks_height
 	 * @param MapImageChunk[][] $chunks
-	 * @param Uuid              $uuid
+	 * @param UuidInterface              $uuid
 	 * @param int               $default_chunk_width
 	 * @param int               $default_chunk_height
 	 */
-	public function __construct(int $blocks_width, int $blocks_height, array $chunks = [], ?Uuid $uuid = null, int $default_chunk_width = 128, int $default_chunk_height = 128) {
+	public function __construct(int $blocks_width, int $blocks_height, array $chunks = [], ?UuidInterface $uuid = null, int $default_chunk_width = 128, int $default_chunk_height = 128) {
 		if ($blocks_width < 0 || $blocks_height < 0) {
 			throw new \InvalidArgumentException('Blocks width/height must be greater than 0');
 		}

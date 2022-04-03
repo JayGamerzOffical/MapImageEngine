@@ -154,6 +154,8 @@ class MapImageEngineCommand extends Command implements PluginOwned, Listener {
 							$x = $x1;
 							$z = $z1;
 							$a = null;
+							$from = null;
+							$to = null;
 							if ($x1 === $x2) {
 								$a = &$z;
 								$from = $z1;

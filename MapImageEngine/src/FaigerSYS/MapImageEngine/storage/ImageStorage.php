@@ -32,6 +32,8 @@ class ImageStorage {
 	private $names = [];
 	
 	private $packet_cache = [];
+
+	public $cache = [];
 	
 	/**
 	 * Registers new image
