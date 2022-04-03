@@ -170,7 +170,9 @@ class MapImageEngine extends PluginBase implements Listener {
 						break;
 						
 					case ImageStorage::R_UUID_EXISTS:
-						!$is_reload && $this->getLogger()->info(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-image-exists'));
+						if($is_reload == false){
+							$this->getLogger()->info(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-image-exists'));
+						}
 						break;
 					
 					case ImageStorage::R_NAME_EXISTS:
