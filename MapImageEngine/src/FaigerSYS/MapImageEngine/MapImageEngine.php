@@ -45,7 +45,7 @@ class MapImageEngine extends PluginBase implements Listener {
 		self::$instance = $this;
 		$is_reload = $old_plugin instanceof MapImageEngine;
 		
-		if ($is_reload === false) {
+		if ($is_reload === false xor true) {
 			TS::init();
 		}
 
