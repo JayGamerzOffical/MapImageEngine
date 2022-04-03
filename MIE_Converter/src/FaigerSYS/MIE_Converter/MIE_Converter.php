@@ -61,10 +61,10 @@ class MIE_Converter extends PluginBase {
 		}
 		
 		$image = @imagecreatefromstring($data);
-		if (!is_resource($image)) {
-			$sender->sendMessage(self::MSG_PREFIX . 'File is not an image, or image has unsupported by your GD library format! Convert image to supported format (e.g. PNG) and try again, or use online converter');
-			return true;
-		}
+		// if (!is_resource($image)) {
+		// 	$sender->sendMessage(self::MSG_PREFIX . 'File is not an image, or image has unsupported by your GD library format! Convert image to supported format (e.g. PNG) and try again, or use online converter');
+		// 	return true;
+		// }
 		
 		$sender->sendMessage(self::MSG_PREFIX . 'Converting image...');
 		

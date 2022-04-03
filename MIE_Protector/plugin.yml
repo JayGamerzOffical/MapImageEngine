@@ -3,7 +3,7 @@ main: FaigerSYS\MIE_Protector\MIE_Protector
 version: 1.0.5
 api: [4.0.0]
 load: POSTWORLD
-author: FaigerSYS
+authors: [FaigerSYS, Laith98Dev, VaxPex]
 description: "Addon for MapImageEngine to protect the image (frame) from rotation and destruction"
 
 permissions:

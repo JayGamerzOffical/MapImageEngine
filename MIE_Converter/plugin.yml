@@ -3,7 +3,7 @@ main: FaigerSYS\MIE_Converter\MIE_Converter
 version: 1.0.3
 api: [4.0.0]
 load: POSTWORLD
-author: FaigerSYS
+authors: [FaigerSYS, Laith98Dev, VaxPex]
 description: "Addon for MapImageEngine to convert images to .mie format"
 
 commands:

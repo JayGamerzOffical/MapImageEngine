@@ -9,7 +9,7 @@ use pocketmine\utils\TextFormat as CLR;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 
-use pocketmine\tile\ItemFrame;
+use pocketmine\block\tile\ItemFrame;
 use FaigerSYS\MapImageEngine\item\FilledMap;
 
 class MIE_Protector extends PluginBase implements Listener {
@@ -28,7 +28,7 @@ class MIE_Protector extends PluginBase implements Listener {
 	 */
 	public function onClick(PlayerInteractEvent $e) {
 		$block = $e->getBlock();
-		$frame = $block->getWorld()->getTile($block);
+		$frame = $block->getPosition()->getWorld()->getTile($block->getPosition());
 		if ($frame instanceof ItemFrame && $frame->getItem() instanceof FilledMap && !$e->getPlayer()->hasPermission('mapimageengine.bypassprotect')) {
 			$e->cancel();
 		}
