@@ -62,8 +62,6 @@ class MapImageChunk {
 	
 	/**
 	 * Sets map image chunk map ID
-	 *
-	 * @return int
 	 */
 	public function setMapId(int $map_id) {
 		$this->map_id = $map_id;
