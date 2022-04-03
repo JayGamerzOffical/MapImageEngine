@@ -51,11 +51,11 @@ class MapImageEngine extends PluginBase implements Listener {
 
 		$msg = "";
 		if($is_reload == true){
-			$msg = TS::translate('plugin-loader.reloading');
+			$msg = 'plugin-loader.reloading';
 		}else{
-			$msg = TS::translate('plugin-loader.loading');
+			$msg = 'plugin-loader.loading';
 		}
-		$this->getLogger()->info(CLR::GOLD . $msg);
+		$this->getLogger()->info(CLR::GOLD . TS::translate($msg));
 		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-instruction'));
 		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-long-loading'));
 		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-1.1-update'));
@@ -92,8 +92,15 @@ class MapImageEngine extends PluginBase implements Listener {
 		if(!$factory->isRegistered($item->getId())){
 			$factory->register($item, true);
 		}
+
+		$msg = "";
+		if($msg == true){
+			$msg = 'plugin-loader.reloaded';
+		}else{
+			$msg = 'plugin-loader.loaded';
+		}
 		
-		$this->getLogger()->info(CLR::GOLD . TS::translate($is_reload ? 'plugin-loader.reloaded' : 'plugin-loader.loaded'));
+		$this->getLogger()->info(CLR::GOLD . TS::translate($msg));
 	}
 	
 	private function loadImages(bool $is_reload = false) {
