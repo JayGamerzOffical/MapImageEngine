@@ -15,7 +15,7 @@ use pocketmine\network\mcpe\protocol\ClientboundMapItemDataPacket;
 
 use FaigerSYS\MapImageEngine\packet\CustomClientboundMapItemDataPacket;
 
-class MapImageChunk {
+class MapImageChunk extends BinaryStream {
 	
 	/**
 	 * Current cache API version
@@ -49,6 +49,8 @@ class MapImageChunk {
 		$this->height = $height;
 		$this->map_id = $map_id ?? Entity::nextRuntimeId();
 		$this->data = new BinaryStream($data);
+		$this->buffer = $data;
+		$this->offsst = $this->data->getOffset() !== null ? $this->data->getOffset() : null;
 	}
 	
 	/**
@@ -104,10 +106,11 @@ class MapImageChunk {
 	 */
 	public function setRGBA(int $x, int $y, int $color) {
 		$pos = $this->getStartOffset($x, $y);
-		$this->data->getBuffer()[$pos++] = chr($color       & 0xff);
-		$this->data->getBuffer()[$pos++] = chr($color >> 8  & 0xff);
-		$this->data->getBuffer()[$pos++] = chr($color >> 16 & 0xff);
-		$this->data->getBuffer()[$pos]   = chr($color >> 24 & 0xff);
+		$this->buffer[$pos++] = chr($color       & 0xff);
+		$this->buffer[$pos++] = chr($color >> 8  & 0xff);
+		$this->buffer[$pos++] = chr($color >> 16 & 0xff);
+		$this->buffer[$pos]   = chr($color >> 24 & 0xff);
+		$this->sendNewData();
 	}
 	
 	/**
@@ -116,8 +119,13 @@ class MapImageChunk {
 	 * @return int
 	 */
 	public function getABGR(int $x, int $y) : int {
-		$this->data->setOffset($this->getStartOffset($x, $y));
-		return (int) $this->data->getLInt() & 0xffffffff;
+		$this->offset = $this->getStartOffset($x, $y);
+		$this->sendNewData();
+		return (int) $this->getLInt() & 0xffffffff;
+	}
+
+	private function sendNewData() {
+		$this->data = new BinaryStream($this->buffer, $this->offset);
 	}
 	
 	/**
@@ -129,10 +137,11 @@ class MapImageChunk {
 	 */
 	public function setABGR(int $x, int $y, int $color) {
 		$pos = $this->getStartOffset($x, $y);
-		$this->data->getBuffer()[$pos++] = chr($color >> 24 & 0xff);
-		$this->data->getBuffer()[$pos++] = chr($color >> 16 & 0xff);
-		$this->data->getBuffer()[$pos++] = chr($color >> 8  & 0xff);
-		$this->data->getBuffer()[$pos]   = chr($color       & 0xff);
+		$this->buffer[$pos++] = chr($color >> 24 & 0xff);
+		$this->buffer[$pos++] = chr($color >> 16 & 0xff);
+		$this->buffer[$pos++] = chr($color >> 8  & 0xff);
+		$this->buffer[$pos]   = chr($color       & 0xff);
+		$this->sendNewData();
 	}
 	
 	/**
@@ -142,10 +151,11 @@ class MapImageChunk {
 	 */
 	public function toArrayColor() : array {
 		$colors = [];
-		$this->data->rewind();
+		$this->rewind();
+		$this->sendNewData();
 		for ($y = 0; $y < $this->height; $y++) {
 			for ($x = 0; $x < $this->width; $x++) {
-				$color = $this->data->getInt();
+				$color = $this->getInt();
 				$colors[$y][$x] = new Color($color >> 24 & 0xff, $color >> 16 & 0xff, $color >> 8 & 0xff, $color & 0xff);
 			}
 		}
@@ -159,10 +169,11 @@ class MapImageChunk {
 	 */
 	public function toArrayRGBA() : array {
 		$colors = [];
-		$this->data->rewind();
+		$this->rewind();
+		$this->sendNewData();
 		for ($y = 0; $y < $this->height; $y++) {
 			for ($x = 0; $x < $this->width; $x++) {
-				$colors[$y][$x] = (int) $this->data->getInt();
+				$colors[$y][$x] = (int) $this->getInt();
 			}
 		}
 		
@@ -176,14 +187,15 @@ class MapImageChunk {
 	 */
 	public function toArrayPrettyRGBA() : array {
 		$colors = [];
-		$this->data->rewind();
+		$this->rewind();
+		$this->sendNewData();
 		for ($y = 0; $y < $this->height; $y++) {
 			for ($x = 0; $x < $this->width; $x++) {
 				$colors[$y][$x] = [
-					'r' => $this->data->getByte(),
-					'g' => $this->data->getByte(),
-					'b' => $this->data->getByte(),
-					'a' => $this->data->getByte()
+					'r' => $this->getByte(),
+					'g' => $this->getByte(),
+					'b' => $this->getByte(),
+					'a' => $this->getByte()
 				];
 			}
 		}
@@ -198,10 +210,11 @@ class MapImageChunk {
 	 */
 	public function toArrayABGR() : array {
 		$colors = [];
-		$this->data->rewind();
+		$this->rewind();
+		$this->sendNewData();
 		for ($y = 0; $y < $this->height; $y++) {
 			for ($x = 0; $x < $this->width; $x++) {
-				$colors[$y][$x] = $this->data->getLInt() & 0xffffffff;
+				$colors[$y][$x] = $this->getLInt() & 0xffffffff;
 			}
 		}
 		
@@ -214,7 +227,7 @@ class MapImageChunk {
 	 * @return string
 	 */
 	public function toBinaryRGBA() : string {
-		return $this->data->getBuffer();
+		return $this->buffer;
 	}
 	
 	/**
@@ -254,7 +267,7 @@ class MapImageChunk {
 		$cache_path = null;
 		
 		if ($use_cache) {
-			$cache_hash = hash('md5', $this->width . '.' . $this->height . '.' . hash('md5', $this->data->getBuffer()));
+			$cache_hash = hash('md5', $this->width . '.' . $this->height . '.' . hash('md5', $this->buffer));
 			$cache_path = MapImageEngine::getInstance()->getDataFolder() . 'cache/' . $cache_hash;
 			$generate_cache = true;
 			if (file_exists($cache_path) && is_file($cache_path)) {
