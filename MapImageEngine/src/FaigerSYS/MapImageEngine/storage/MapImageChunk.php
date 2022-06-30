@@ -50,7 +50,7 @@ class MapImageChunk extends BinaryStream {
 		$this->map_id = $map_id ?? Entity::nextRuntimeId();
 		$this->data = new BinaryStream($data);
 		$this->buffer = $data;
-		$this->offsst = $this->data->getOffset() !== null ? $this->data->getOffset() : null;
+		$this->offset = this->data->getOffset() !== null ? $this->data->getOffset() : null;
 	}
 	
 	/**
